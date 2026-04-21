@@ -5,8 +5,6 @@ import {
   Library, 
   School, 
   Briefcase, 
-  Settings, 
-  ShieldCheck,
   ChevronRight,
   Code2
 } from 'lucide-react';
