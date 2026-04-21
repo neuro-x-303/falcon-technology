@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/Falcon-rental-Apps-",
+      "destination": "/Falcon-rental-Apps-/index.html"
+    },
+    {
+      "source": "/Falcon-rental-Apps-/",
+      "destination": "/Falcon-rental-Apps-/index.html"
+    },
+    {
+      "source": "/Falcon-rental-Apps-/(.*)",
+      "destination": "/Falcon-rental-Apps-/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
