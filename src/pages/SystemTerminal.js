@@ -116,7 +116,7 @@ const ArchitectureRow = ({ name, type, health, throughPut, uptime }) => {
   );
 };
 
-const ManagementDashboard = () => {
+const SystemTerminal = () => {
   const metrics = [
     { title: 'Processing Power', value: '1.2 PFLOPS', icon: Cpu, change: '+14%', trend: 'up', color: 'var(--primary-color)' },
     { title: 'Neural Latency', value: '0.82 ms', icon: Zap, change: '-0.12ms', trend: 'up', color: 'var(--secondary-color)' },
@@ -248,5 +248,4 @@ const ManagementDashboard = () => {
   );
 };
 
-export default ManagementDashboard;
-
+export default SystemTerminal;

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Cpu, Bell, Search, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -14,9 +16,16 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const navLinks = [
+    { name: 'Core', path: '/' },
+    { name: 'Architectures', path: '/management-apps' },
+    { name: 'API Layers', path: '#api' },
+    { name: 'Edge Nodes', path: '#edge' },
+  ];
+
   return (
     <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
-      <div className="nav-brand">
+      <Link to="/" className="nav-brand" style={{ textDecoration: 'none', color: 'inherit' }}>
         <motion.div 
           initial={{ rotate: -20, opacity: 0 }}
           animate={{ rotate: 0, opacity: 1 }}
@@ -25,14 +34,13 @@ const Navbar = () => {
           <Cpu size={32} className="nav-icon" />
         </motion.div>
         <span className="nav-title">FALCON <span>NEURAL</span></span>
-      </div>
+      </Link>
 
       {/* Desktop Menu */}
       <div className="nav-links desktop-only">
-        <a href="/" className="active">Core</a>
-        <a href="/management-apps">Architectures</a>
-        <a href="#api">API Layers</a>
-        <a href="#edge">Edge Nodes</a>
+        <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Core</Link>
+        <Link to="/systemterminal" className={location.pathname === '/systemterminal' ? 'active' : ''}>Architectures</Link>
+        <Link to="/management-apps" className={location.pathname === '/management-apps' ? 'active' : ''}>Uplink</Link>
       </div>
 
       <div className="nav-actions desktop-only">
@@ -66,10 +74,15 @@ const Navbar = () => {
             exit={{ opacity: 0, y: -20 }}
             className="mobile-menu"
           >
-            <a href="/management-apps">Dashboard</a>
-            <a href="#projects">Projects</a>
-            <a href="#team">Team</a>
-            <a href="#settings">Settings</a>
+            {navLinks.map((link) => (
+              <Link 
+                key={link.path} 
+                to={link.path} 
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {link.name}
+              </Link>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
@@ -78,3 +91,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
