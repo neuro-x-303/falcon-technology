@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Bell, Search, Menu, X } from 'lucide-react';
+import { Cpu, Bell, Search, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
@@ -22,17 +22,17 @@ const Navbar = () => {
           animate={{ rotate: 0, opacity: 1 }}
           className="nav-logo-container"
         >
-          <Layout size={32} className="nav-icon" />
+          <Cpu size={32} className="nav-icon" />
         </motion.div>
-        <span className="nav-title">FALCON <span>MANAGEMENT</span></span>
+        <span className="nav-title">FALCON <span>NEURAL</span></span>
       </div>
 
       {/* Desktop Menu */}
       <div className="nav-links desktop-only">
-        <a href="/management-apps" className="active">Dashboard</a>
-        <a href="#projects">Projects</a>
-        <a href="#team">Team</a>
-        <a href="#settings">Settings</a>
+        <a href="/" className="active">Core</a>
+        <a href="/management-apps">Architectures</a>
+        <a href="#api">API Layers</a>
+        <a href="#edge">Edge Nodes</a>
       </div>
 
       <div className="nav-actions desktop-only">
