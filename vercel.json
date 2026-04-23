@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/management-app",
+      "destination": "/management-apps/index.html"
+    },
+    {
+      "source": "/management-app/(.*)",
+      "destination": "/management-apps/$1"
+    },
+    {
       "source": "/management-apps",
       "destination": "/management-apps/index.html"
     },
@@ -13,7 +21,7 @@
       "destination": "/management-apps/$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!management-apps|management-app).*)",
       "destination": "/index.html"
     }
   ]
