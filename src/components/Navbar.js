@@ -33,14 +33,14 @@ const Navbar = () => {
         >
           <Cpu size={32} className="nav-icon" />
         </motion.div>
-        <span className="nav-title">FALCON <span>NEURAL</span></span>
+        <span className="nav-title">FALCON TECHNOLOGY</span>
       </Link>
 
       {/* Desktop Menu */}
       <div className="nav-links desktop-only">
         <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Core</Link>
         <Link to="/systemterminal" className={location.pathname === '/systemterminal' ? 'active' : ''}>Architectures</Link>
-        <Link to="/management-apps" className={location.pathname === '/management-apps' ? 'active' : ''}>Uplink</Link>
+        <a href="/management-apps/index.html">Uplink</a>
       </div>
 
       <div className="nav-actions desktop-only">

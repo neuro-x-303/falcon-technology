@@ -3,16 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-ro
 import { motion } from 'framer-motion';
 import './App.css';
 import Navbar from './components/Navbar';
-import ManagementApps from './pages/ManagementApps';
 import SystemTerminal from './pages/SystemTerminal';
 import ThreeBackground from './components/ThreeBackground';
 
 // Landing Page Component (Transformed into AI Tech Platform)
 const LandingPage = () => {
   return (
-    <div className="App">
-      <ThreeBackground />
-      
+    <div className="landing-page-container">
       {/* Hero Section */}
       <header className="hero">
         <motion.div 
@@ -48,13 +45,13 @@ const LandingPage = () => {
               </Link>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link 
-                to="/management-apps" 
+              <a 
+                href="/management-apps/index.html" 
                 className="hero-cta" 
                 style={{ background: 'transparent', border: '1px solid var(--primary-color)', color: '#fff', padding: '1.2rem 3.5rem', textDecoration: 'none', display: 'inline-block', borderRadius: '12px' }}
               >
                 MANAGEMENT APPS
-              </Link>
+              </a>
             </motion.div>
           </div>
         </motion.div>
@@ -163,10 +160,10 @@ function App() {
   return (
     <Router>
       <div className="App">
+        <ThreeBackground />
         <Navbar />
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/management-apps" element={<ManagementApps />} />
           <Route path="/systemterminal" element={<SystemTerminal />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

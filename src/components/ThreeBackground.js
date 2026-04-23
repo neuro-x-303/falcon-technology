@@ -5,205 +5,194 @@ const ThreeBackground = () => {
     const mouse = useRef({ x: 0, y: 0 });
 
     useEffect(() => {
-        let scene, camera, renderer, particles, connections, dataPackets;
+        let scene, camera, renderer, linesMesh;
         let particlesData = [];
-        const count = 120;
-        const maxDistance = 4.5;
-        const packetCount = 40;
-
-        const createGlowTexture = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 64;
-            canvas.height = 64;
-            const context = canvas.getContext('2d');
-            const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
-            gradient.addColorStop(0, 'rgba(0, 243, 255, 1)');
-            gradient.addColorStop(0.2, 'rgba(0, 243, 255, 0.4)');
-            gradient.addColorStop(0.5, 'rgba(0, 243, 255, 0.1)');
-            gradient.addColorStop(1, 'rgba(0, 243, 255, 0)');
-            context.fillStyle = gradient;
-            context.fillRect(0, 0, 64, 64);
-            return new window.THREE.CanvasTexture(canvas);
-        };
+        let positions, colors;
+        let particles;
+        let pointCloud;
+        let particlePositions;
+        let linesGeometry;
+        let linesMaterial;
+        const particleCount = 180;
+        const maxDistance = 6.5;
+        const currentMount = mountRef.current;
+        let animationFrameId;
 
         const init = () => {
             const THREE = window.THREE;
             if (!THREE) return;
 
             scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 15;
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 16;
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
-            if (mountRef.current) mountRef.current.appendChild(renderer.domElement);
+            renderer.setClearColor(0x020617, 1);
+            
+            if (currentMount) {
+                currentMount.innerHTML = '';
+                currentMount.appendChild(renderer.domElement);
+            }
 
-            // Particles (Nodes)
-            const geometry = new THREE.BufferGeometry();
-            const positions = new Float32Array(count * 3);
-            const sizes = new Float32Array(count);
+            const segments = particleCount * particleCount;
 
-            for (let i = 0; i < count; i++) {
-                positions[i * 3] = (Math.random() - 0.5) * 30;
-                positions[i * 3 + 1] = (Math.random() - 0.5) * 30;
-                positions[i * 3 + 2] = (Math.random() - 0.5) * 30;
+            positions = new Float32Array(segments * 3);
+            colors = new Float32Array(segments * 3);
+
+            const pMaterial = new THREE.PointsMaterial({
+                color: 0x00f3ff,
+                size: 0.12,
+                blending: THREE.AdditiveBlending,
+                transparent: true,
+                sizeAttenuation: true,
+                opacity: 0.9
+            });
+
+            particles = new THREE.BufferGeometry();
+            particlePositions = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                const x = (Math.random() - 0.5) * 35;
+                const y = (Math.random() - 0.5) * 35;
+                const z = (Math.random() - 0.5) * 35;
+
+                particlePositions[i * 3] = x;
+                particlePositions[i * 3 + 1] = y;
+                particlePositions[i * 3 + 2] = z;
 
                 particlesData.push({
                     velocity: new THREE.Vector3(
-                        (-1 + Math.random() * 2) * 0.01,
-                        (-1 + Math.random() * 2) * 0.01,
-                        (-1 + Math.random() * 2) * 0.01
-                    )
-                });
-                sizes[i] = 1.0 + Math.random() * 2.0;
-            }
-
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-
-            const material = new THREE.PointsMaterial({
-                size: 0.4,
-                map: createGlowTexture(),
-                transparent: true,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                color: 0x00f3ff
-            });
-
-            particles = new THREE.Points(geometry, material);
-            scene.add(particles);
-
-            // Connections
-            const lineGeometry = new THREE.BufferGeometry();
-            const lineMaterial = new THREE.LineBasicMaterial({
-                color: 0x7b2ff7,
-                transparent: true,
-                opacity: 0.2,
-                blending: THREE.AdditiveBlending
-            });
-
-            connections = new THREE.LineSegments(lineGeometry, lineMaterial);
-            scene.add(connections);
-
-            // Data Packets
-            const packetGeometry = new THREE.BufferGeometry();
-            const packetPositions = new Float32Array(packetCount * 3);
-            packetGeometry.setAttribute('position', new THREE.BufferAttribute(packetPositions, 3));
-            
-            const packetMaterial = new THREE.PointsMaterial({
-                size: 0.25,
-                color: 0x00f3ff,
-                transparent: true,
-                opacity: 0.8,
-                blending: THREE.AdditiveBlending,
-                map: createGlowTexture()
-            });
-            
-            dataPackets = new THREE.Points(packetGeometry, packetMaterial);
-            scene.add(dataPackets);
-
-            const packetState = [];
-            for(let i=0; i<packetCount; i++) {
-                packetState.push({
-                    active: false,
-                    startNode: 0,
-                    endNode: 0,
-                    progress: 0,
-                    speed: 0.005 + Math.random() * 0.01
+                        (Math.random() - 0.5) * 0.08,
+                        (Math.random() - 0.5) * 0.08,
+                        (Math.random() - 0.5) * 0.08
+                    ),
+                    numConnections: 0,
+                    phase: Math.random() * Math.PI * 2
                 });
             }
+
+            particles.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+
+            pointCloud = new THREE.Points(particles, pMaterial);
+            scene.add(pointCloud);
+
+            linesGeometry = new THREE.BufferGeometry();
+            linesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            linesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            linesMaterial = new THREE.LineBasicMaterial({
+                vertexColors: true,
+                blending: THREE.AdditiveBlending,
+                transparent: true,
+                opacity: 0.4
+            });
+
+            linesMesh = new THREE.LineSegments(linesGeometry, linesMaterial);
+            scene.add(linesMesh);
 
             const onMouseMove = (event) => {
-                mouse.current.x = (event.clientX / window.innerWidth) * 2 - 1;
-                mouse.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                mouse.current.x = (event.clientX - window.innerWidth / 2) * 0.001;
+                mouse.current.y = (event.clientY - window.innerHeight / 2) * 0.001;
             };
 
             window.addEventListener('mousemove', onMouseMove);
-            window.addEventListener('resize', onWindowResize);
             
             const animate = () => {
-                if (!scene) return;
-                requestAnimationFrame(animate);
+                if (!scene || !renderer) return;
+                animationFrameId = requestAnimationFrame(animate);
 
-                const positions = particles.geometry.attributes.position.array;
-                const linePositions = [];
+                let vertexpos = 0;
+                let colorpos = 0;
+                let numConnected = 0;
 
-                // Update Nodes
-                for (let i = 0; i < count; i++) {
-                    const data = particlesData[i];
-                    positions[i * 3] += data.velocity.x;
-                    positions[i * 3 + 1] += data.velocity.y;
-                    positions[i * 3 + 2] += data.velocity.z;
+                for (let i = 0; i < particleCount; i++)
+                    particlesData[i].numConnections = 0;
 
-                    // Bounds
-                    if (Math.abs(positions[i * 3]) > 15) data.velocity.x *= -1;
-                    if (Math.abs(positions[i * 3 + 1]) > 15) data.velocity.y *= -1;
-                    if (Math.abs(positions[i * 3 + 2]) > 15) data.velocity.z *= -1;
+                const time = Date.now() * 0.0015;
 
-                    // Mouse Depth
-                    const dx = positions[i * 3] - (mouse.current.x * 10);
-                    const dy = positions[i * 3 + 1] - (mouse.current.y * 10);
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    if(dist < 5) {
-                        positions[i * 3] += dx * 0.005;
-                        positions[i * 3 + 1] += dy * 0.005;
-                    }
-                }
-                particles.geometry.attributes.position.needsUpdate = true;
+                for (let i = 0; i < particleCount; i++) {
+                    const particleData = particlesData[i];
+                    
+                    // Random organic movement + physics
+                    particleData.phase += 0.02;
+                    const bounceX = Math.sin(particleData.phase) * 0.02;
+                    const bounceY = Math.cos(particleData.phase) * 0.02;
 
-                // Update Lines & Packet Triggers
-                const connectionsList = [];
-                for (let i = 0; i < count; i++) {
-                    for (let j = i + 1; j < count; j++) {
-                        const dx = positions[i * 3] - positions[j * 3];
-                        const dy = positions[i * 3 + 1] - positions[j * 3 + 1];
-                        const dz = positions[i * 3 + 2] - positions[j * 3 + 2];
-                        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                    particlePositions[i * 3] += particleData.velocity.x + bounceX;
+                    particlePositions[i * 3 + 1] += particleData.velocity.y + bounceY;
+                    particlePositions[i * 3 + 2] += particleData.velocity.z;
+
+                    if (particlePositions[i * 3 + 1] < -17 || particlePositions[i * 3 + 1] > 17)
+                        particleData.velocity.y = -particleData.velocity.y;
+
+                    if (particlePositions[i * 3] < -17 || particlePositions[i * 3] > 17)
+                        particleData.velocity.x = -particleData.velocity.x;
+
+                    if (particlePositions[i * 3 + 2] < -17 || particlePositions[i * 3 + 2] > 17)
+                        particleData.velocity.z = -particleData.velocity.z;
+
+                    // Data Flow animation via connection highlighting
+                    for (let j = i + 1; j < particleCount; j++) {
+                        const particleDataB = particlesData[j];
+                        
+                        const dx = particlePositions[i * 3] - particlePositions[j * 3];
+                        const dy = particlePositions[i * 3 + 1] - particlePositions[j * 3 + 1];
+                        const dz = particlePositions[i * 3 + 2] - particlePositions[j * 3 + 2];
+                        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
                         if (dist < maxDistance) {
-                            linePositions.push(positions[i*3], positions[i*3+1], positions[i*3+2]);
-                            linePositions.push(positions[j*3], positions[j*3+1], positions[j*3+2]);
-                            connectionsList.push({s: i, e: j});
+                            particleData.numConnections++;
+                            particleDataB.numConnections++;
+
+                            const alpha = 1.0 - dist / maxDistance;
+
+                            positions[vertexpos++] = particlePositions[i * 3];
+                            positions[vertexpos++] = particlePositions[i * 3 + 1];
+                            positions[vertexpos++] = particlePositions[i * 3 + 2];
+
+                            positions[vertexpos++] = particlePositions[j * 3];
+                            positions[vertexpos++] = particlePositions[j * 3 + 1];
+                            positions[vertexpos++] = particlePositions[j * 3 + 2];
+
+                            // Data flow color effect (flashing lines mimicking data packets)
+                            const flowActive = Math.sin(time * 5 + i * 0.1 + j * 0.1) > 0.95;
+                            
+                            // Base color: 0x7b2ff7 (123, 47, 247) -> normalized: 0.48, 0.18, 0.96
+                            // Glow color: 0x00f3ff (0, 243, 255) -> normalized: 0.0, 0.95, 1.0
+                            const colorA = flowActive ? 0.0 : 0.48; 
+                            const colorB = flowActive ? 0.95 : 0.18;
+                            const colorC = flowActive ? 1.0 : 0.96;
+                            const brightness = flowActive ? 1.5 : 0.4;
+
+                            colors[colorpos++] = colorA * alpha * brightness;
+                            colors[colorpos++] = colorB * alpha * brightness;
+                            colors[colorpos++] = colorC * alpha * brightness;
+
+                            colors[colorpos++] = colorA * alpha * brightness;
+                            colors[colorpos++] = colorB * alpha * brightness;
+                            colors[colorpos++] = colorC * alpha * brightness;
+
+                            numConnected++;
                         }
                     }
                 }
-                connections.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(linePositions), 3));
 
-                // Update Packets
-                const pPos = dataPackets.geometry.attributes.position.array;
-                const time = Date.now() * 0.001;
-                
-                for (let i = 0; i < packetCount; i++) {
-                    const p = packetState[i];
-                    if (!p.active && connectionsList.length > 0 && Math.random() < 0.05) {
-                        const conn = connectionsList[Math.floor(Math.random() * connectionsList.length)];
-                        p.active = true;
-                        p.startNode = conn.s;
-                        p.endNode = conn.e;
-                        p.progress = 0;
-                    }
+                linesMesh.geometry.setDrawRange(0, numConnected * 2);
+                linesMesh.geometry.attributes.position.needsUpdate = true;
+                linesMesh.geometry.attributes.color.needsUpdate = true;
+                pointCloud.geometry.attributes.position.needsUpdate = true;
 
-                    if (p.active) {
-                        p.progress += p.speed;
-                        if (p.progress >= 1) {
-                            p.active = false;
-                            pPos[i * 3] = pPos[i * 3 + 1] = pPos[i * 3 + 2] = 1000;
-                        } else {
-                            const s = p.startNode * 3;
-                            const e = p.endNode * 3;
-                            pPos[i * 3] = positions[s] + (positions[e] - positions[s]) * p.progress;
-                            pPos[i * 3 + 1] = positions[s + 1] + (positions[e + 1] - positions[s + 1]) * p.progress;
-                            pPos[i * 3 + 2] = positions[s + 2] + (positions[e + 2] - positions[s + 2]) * p.progress;
-                        }
-                    } else {
-                        pPos[i * 3] = pPos[i * 3 + 1] = pPos[i * 3 + 2] = 1000;
-                    }
+                if (pointCloud && linesMesh) {
+                    pointCloud.rotation.y += 0.0005;
+                    linesMesh.rotation.y += 0.0005;
                 }
-                dataPackets.geometry.attributes.position.needsUpdate = true;
-                dataPackets.material.opacity = 0.5 + Math.sin(time * 3) * 0.3;
 
-                scene.rotation.y += 0.0005;
+                camera.position.x += (mouse.current.x * 10 - camera.position.x) * 0.05;
+                camera.position.y += (-mouse.current.y * 10 - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+
                 renderer.render(scene, camera);
             };
 
@@ -217,29 +206,46 @@ const ThreeBackground = () => {
             renderer.setSize(window.innerWidth, window.innerHeight);
         };
 
+        window.addEventListener('resize', onWindowResize);
+
+        let checkInterval;
         if (window.THREE) {
             init();
         } else {
-            const interval = setInterval(() => {
+            checkInterval = setInterval(() => {
                 if (window.THREE) {
-                    clearInterval(interval);
+                    clearInterval(checkInterval);
                     init();
                 }
             }, 100);
-            return () => clearInterval(interval);
+            setTimeout(() => { if (checkInterval) clearInterval(checkInterval); }, 5000);
         }
 
-        const currentRef = mountRef.current;
         return () => {
-            if (currentRef && renderer && renderer.domElement) {
-                currentRef.removeChild(renderer.domElement);
-            }
-            window.removeEventListener('mousemove', (e)=>{});
             window.removeEventListener('resize', onWindowResize);
+            window.removeEventListener('mousemove', (e)=>{});
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            if (checkInterval) clearInterval(checkInterval);
+            if (currentMount) currentMount.innerHTML = '';
         };
     }, []);
 
-    return <div ref={mountRef} style={{ position: 'fixed', top: 0, left: 0, zIndex: -1, pointerEvents: 'none', background: '#020617' }} />;
+    return (
+        <div 
+            ref={mountRef} 
+            className="three-bg-canvas"
+            style={{ 
+                position: 'fixed', 
+                top: 0, 
+                left: 0, 
+                width: '100vw', 
+                height: '100vh', 
+                zIndex: -1, 
+                pointerEvents: 'none', 
+                background: 'transparent'
+            }} 
+        />
+    );
 };
 
 export default ThreeBackground;
