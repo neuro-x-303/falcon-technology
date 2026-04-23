@@ -63,9 +63,10 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     const lineMaterial = new THREE.LineBasicMaterial({
-        color: 0x7b2ff7,
+        color: 0x8a4fff,
         transparent: true,
-        opacity: 0.15
+        opacity: 0.4,
+        blending: THREE.AdditiveBlending
     });
 
     const pulseMaterial = new THREE.MeshBasicMaterial({

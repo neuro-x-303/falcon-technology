@@ -43,7 +43,12 @@ if (canvas) {
     for (let i = 0; i < nodeCount; i++) nodes.push(new Node());
 
     const pointMaterial = new THREE.PointsMaterial({ size: 0.12, color: 0x00f3ff, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending });
-    const lineMaterial = new THREE.LineBasicMaterial({ color: 0x7b2ff7, transparent: true, opacity: 0.15 });
+    const lineMaterial = new THREE.LineBasicMaterial({ 
+        color: 0x8a4fff, 
+        transparent: true, 
+        opacity: 0.4, 
+        blending: THREE.AdditiveBlending 
+    });
     const pulseMaterial = new THREE.MeshBasicMaterial({ color: 0x00f3ff, transparent: true, opacity: 0.8 });
     const pulseGeometry = new THREE.SphereGeometry(0.04, 8, 8);
     const pulseGroup = new THREE.Group();
