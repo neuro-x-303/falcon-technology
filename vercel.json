@@ -1,16 +1,16 @@
 {
   "rewrites": [
     {
-      "source": "/Falcon-rental-Apps-",
-      "destination": "/Falcon-rental-Apps-/index.html"
+      "source": "/management-apps",
+      "destination": "/management-apps/index.html"
     },
     {
-      "source": "/Falcon-rental-Apps-/",
-      "destination": "/Falcon-rental-Apps-/index.html"
+      "source": "/management-apps/",
+      "destination": "/management-apps/index.html"
     },
     {
-      "source": "/Falcon-rental-Apps-/(.*)",
-      "destination": "/Falcon-rental-Apps-/$1"
+      "source": "/management-apps/(.*)",
+      "destination": "/management-apps/$1"
     },
     {
       "source": "/(.*)",
