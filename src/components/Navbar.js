@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Cpu, Bell, Search, Menu, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,79 +12,41 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'Core', path: '/' },
-    { name: 'Architectures', path: '/management-apps' },
-    { name: 'API Layers', path: '#api' },
-    { name: 'Edge Nodes', path: '#edge' },
-  ];
-
   return (
-    <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
-      <Link to="/" className="nav-brand" style={{ textDecoration: 'none', color: 'inherit' }}>
-        <motion.div 
-          initial={{ rotate: -20, opacity: 0 }}
-          animate={{ rotate: 0, opacity: 1 }}
-          className="nav-logo-container"
-        >
-          <Cpu size={32} className="nav-icon" />
-        </motion.div>
-        <span className="nav-title">FALCON TECHNOLOGY</span>
+    <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`} style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      justifyContent: 'center', 
+      alignItems: 'center',
+      padding: '0.5rem 0',
+      height: 'auto',
+      minHeight: '60px'
+    }}>
+      <Link to="/" className="nav-brand" style={{ 
+        textDecoration: 'none', 
+        color: 'inherit', 
+        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
+      }}>
+        <h1 style={{ 
+          margin: 0, 
+          fontSize: '1.2rem', 
+          letterSpacing: '3px', 
+          fontFamily: 'Orbitron, sans-serif' 
+        }}>FALCON TECHNOLOGY</h1>
+        <p style={{ 
+          margin: 0, 
+          fontSize: '0.7rem', 
+          letterSpacing: '1px', 
+          opacity: 0.8,
+          color: '#00f3ff',
+          textTransform: 'uppercase'
+        }}>App Development Hub</p>
       </Link>
-
-      {/* Desktop Menu */}
-      <div className="nav-links desktop-only">
-        <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Core</Link>
-        <Link to="/systemterminal" className={location.pathname === '/systemterminal' ? 'active' : ''}>Architectures</Link>
-        <a href="/management-apps/index.html">Uplink</a>
-      </div>
-
-      <div className="nav-actions desktop-only">
-        <div className="search-container">
-          <Search size={18} />
-          <input type="text" placeholder="Search projects..." />
-        </div>
-        <button className="icon-btn">
-          <Bell size={20} />
-          <span className="notification-dot"></span>
-        </button>
-        <div className="user-profile">
-          <div className="avatar">JD</div>
-        </div>
-      </div>
-
-      {/* Mobile Toggle */}
-      <button 
-        className="mobile-toggler"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="mobile-menu"
-          >
-            {navLinks.map((link) => (
-              <Link 
-                key={link.path} 
-                to={link.path} 
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {link.name}
-              </Link>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </nav>
   );
 };
 
 export default Navbar;
-
